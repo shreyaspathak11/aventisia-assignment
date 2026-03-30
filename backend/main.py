@@ -1,12 +1,18 @@
 import uvicorn
 import httpx
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.responses import RedirectResponse
+
+from fastapi.security import HTTPBearer
 
 from api.v1.github_api import router as github_router
 from middleware.auth_middleware import AuthMiddleware
 from config import settings
+
+# This defines the "Authorize" button in Swagger UI
+# We set auto_error=False because our AuthMiddleware handles the actual verification
+security = HTTPBearer(auto_error=False)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -20,7 +26,9 @@ app = FastAPI(
     title=settings.APP_TITLE,
     description=settings.APP_DESCRIPTION,
     version=settings.APP_VERSION,
-    lifespan=lifespan
+    lifespan=lifespan,
+    # This applies the padlock icon to all endpoints in Swagger
+    dependencies=[Depends(security)]
 )
 
 # Add Auth Middleware

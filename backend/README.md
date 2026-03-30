@@ -15,7 +15,7 @@ A professional, modular backend service to integrate with GitHub's API. Built wi
 
    ```bash
    git clone <repository-url>
-   cd aventisia-assignment
+   cd backend
    ```
 
 2. **Setup virtual environment:**
@@ -30,7 +30,7 @@ A professional, modular backend service to integrate with GitHub's API. Built wi
 
 3. **Install dependencies:**
    ```bash
-   pip install -r backend/requirements.txt
+   pip install -r requirements.txt
    ```
 
 ### Running the Application
@@ -38,7 +38,6 @@ A professional, modular backend service to integrate with GitHub's API. Built wi
 Navigate to the `backend` directory and start the server using `uvicorn`:
 
 ```bash
-cd backend
 uvicorn main:app --reload
 ```
 
