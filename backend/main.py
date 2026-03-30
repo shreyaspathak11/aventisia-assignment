@@ -1,27 +1,42 @@
 import uvicorn
+import httpx
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
 
-from api.v1.auth_api import router as v1_router
-from api.v2.auth_api import router as v2_router
+from api.v1.github_api import router as github_router
+from middleware.auth_middleware import AuthMiddleware
+from config import settings
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Setup shared HTTP client
+    app.state.http_client = httpx.AsyncClient()
+    yield
+    # Safely close client
+    await app.state.http_client.aclose()
 
 app = FastAPI(
-    title="GitHub Cloud Connector",
-    description="""
-    A modular GitHub connector that integrates with external GitHub APIs.
-    """,
-    version="1.0.0",
-    docs_url="/docs",
-    redoc_url="/redoc"
+    title=settings.APP_TITLE,
+    description=settings.APP_DESCRIPTION,
+    version=settings.APP_VERSION,
+    lifespan=lifespan
 )
 
-# Root redirect to documentation
+# Add Auth Middleware
+app.add_middleware(AuthMiddleware)
+
+# Root redirect
 @app.get("/", include_in_schema=False)
 async def root():
     return RedirectResponse(url="/docs")
 
-# Include Routers
-
+# Include functional routes using central config
+app.include_router(
+    github_router, 
+    prefix=settings.API_V1_STR, 
+    tags=settings.GITHUB_TAGS
+)
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
