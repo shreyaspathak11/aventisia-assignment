@@ -1,16 +1,56 @@
+import httpx
+from utils.context import get_current_user_login
+from models.github_model import CreateIssueRequest, CreatePullRequestRequest
+from config import settings
+
 class GithubService:
-    def __init__(self):
-        pass
+    def __init__(self, token: str, client: httpx.AsyncClient):
+        self.token = token
+        self.client = client
+        self.headers = {
+            "Authorization": f"token {self.token}",
+            "Accept": settings.GITHUB_ACCEPT_HEADER,
+        }
 
-    def get_repositories(self):
-        pass
+    async def get_repositories(self) -> httpx.Response:
+        """Raw GET call for repositories."""
+        return await self.client.get(
+            f"{settings.GITHUB_BASE_URL}/user/repos", 
+            headers=self.headers
+        )
 
-    def create_issue(self, owner, repo, title, body):
-        pass
+    async def create_issue(self, data: CreateIssueRequest) -> httpx.Response:
+        """Raw POST call for issue creation."""
+        owner = get_current_user_login()
+        payload = data.model_dump(exclude={"repo"}, exclude_none=True)
+        return await self.client.post(
+            f"{settings.GITHUB_BASE_URL}/repos/{owner}/{data.repo}/issues",
+            headers=self.headers,
+            json=payload
+        )
 
-    def create_pull_request(self, owner, repo, title, body, head, base):
-        pass
+    async def list_issues(self, repo: str) -> httpx.Response:
+        """Raw GET call for issue listing."""
+        owner = get_current_user_login()
+        return await self.client.get(
+            f"{settings.GITHUB_BASE_URL}/repos/{owner}/{repo}/issues",
+            headers=self.headers
+        )
 
-    def get_commits(self, owner, repo):
-        pass
-    
+    async def get_commits(self, repo: str) -> httpx.Response:
+        """Raw GET call for commit history."""
+        owner = get_current_user_login()
+        return await self.client.get(
+            f"{settings.GITHUB_BASE_URL}/repos/{owner}/{repo}/commits",
+            headers=self.headers
+        )
+
+    async def create_pull_request(self, data: CreatePullRequestRequest) -> httpx.Response:
+        """Raw POST call for pull request creation."""
+        owner = get_current_user_login()
+        payload = data.model_dump(exclude={"repo"}, exclude_none=True)
+        return await self.client.post(
+            f"{settings.GITHUB_BASE_URL}/repos/{owner}/{data.repo}/pulls",
+            headers=self.headers,
+            json=payload
+        )
