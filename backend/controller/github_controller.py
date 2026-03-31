@@ -8,15 +8,22 @@ from models import SuccessResponse, CreateIssueRequest, CreatePullRequestRequest
 from utils.errors import handle_api_error
 
 class GithubController:
+    """
+    GithubController orchestrates high-level business logic for GitHub operations.
+    It coordinates requests to the GithubService and handles error transformation 
+    for the API layer.
+    """
     def __init__(self, service: GithubService = Depends(get_github_service)):
         """
-        The Controller manages GitHub operations via its injected Service.
-        It handles business logic and error transformation.
+        Initializes the controller with an injected GithubService.
         """
         self.github_service = service
 
     async def get_repos(self) -> SuccessResponse[List[Any]]:
-        """List all your repositories."""
+        """
+        Retrieves a list of all repositories for the authenticated user.
+        Raises an HTTPException via handle_api_error on failure.
+        """
         try:
             response = await self.github_service.get_repositories()
             response.raise_for_status()
@@ -25,7 +32,9 @@ class GithubController:
             handle_api_error(e, "Failed to fetch repositories")
 
     async def create_issue(self, data: CreateIssueRequest) -> SuccessResponse[dict]:
-        """Create a new issue."""
+        """
+        Orchestrates the creation of a new issue in a GitHub repository.
+        """
         try:
             response = await self.github_service.create_issue(data)
             response.raise_for_status()
@@ -34,7 +43,9 @@ class GithubController:
             handle_api_error(e, "Failed to create issue")
 
     async def list_issues(self, repo: str) -> SuccessResponse[List[Any]]:
-        """List issues for a repository."""
+        """
+        Retrieves all issues associated with a specific repository.
+        """
         try:
             response = await self.github_service.list_issues(repo)
             response.raise_for_status()
@@ -43,7 +54,9 @@ class GithubController:
             handle_api_error(e, "Failed to list issues")
 
     async def get_commits(self, repo: str) -> SuccessResponse[List[Any]]:
-        """Fetch commits history."""
+        """
+        Retrieves the commit timeline and metadata for a repository.
+        """
         try:
             response = await self.github_service.get_commits(repo)
             response.raise_for_status()
@@ -51,17 +64,19 @@ class GithubController:
         except Exception as e:
             handle_api_error(e, "Failed to fetch commits")
 
-
-
     async def create_branch(self, data: CreateBranchRequest) -> SuccessResponse[dict]:
-        """Create a new branch from a base branch."""
+        """
+        Atomically creates a new branch.
+        First retrieves the 'latest commit' SHA from a base branch,
+        then creates a new reference pointing to that SHA.
+        """
         try:
-            # 1. Get SHA of base branch
+            # 1. Retrieve current state (SHA) of the base branch
             sha_resp = await self.github_service.get_branch_sha(data.repo, data.base_branch)
             sha_resp.raise_for_status()
             sha = sha_resp.json()["object"]["sha"]
 
-            # 2. Create the new branch
+            # 2. Create the new branch reference
             branch_resp = await self.github_service.create_branch(data.repo, data.branch_name, sha)
             branch_resp.raise_for_status()
 
@@ -73,7 +88,9 @@ class GithubController:
             handle_api_error(e, "Failed to create branch")
 
     async def create_file(self, data: CreateFileRequest) -> SuccessResponse[dict]:
-        """Push a file to a specific branch."""
+        """
+        Directly pushes a file to the specified repository and branch.
+        """
         try:
             file_resp = await self.github_service.create_file(
                 data.repo, 
@@ -91,7 +108,9 @@ class GithubController:
             handle_api_error(e, "Failed to push file")
             
     async def create_pull_request(self, data: CreatePullRequestRequest) -> SuccessResponse[dict]:
-        """Create a new pull request."""
+        """
+        Initializes a new Pull Request on GitHub based on the provided head and base branches.
+        """
         try:
             response = await self.github_service.create_pull_request(data)
             response.raise_for_status()

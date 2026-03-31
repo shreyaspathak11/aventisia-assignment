@@ -7,9 +7,8 @@ router = APIRouter()
 @router.get("/login")
 async def login(controller: AuthController = Depends()):
     """
-    Start GitHub OAuth Login
-    
-    Visit this URL in your browser to begin the authorization process.
+    Initiates the GitHub OAuth 2.0 login sequence.
+    This endpoint generates and redirects the client to the GitHub authorization URL.
     """
     return await controller.login()
 
@@ -19,9 +18,7 @@ async def callback(
     controller: AuthController = Depends()
 ):
     """
-    GitHub Callback (Token Exchange)
-    
-    This endpoint is called automatically by GitHub after you authorize the app.
-    It returns your permanent access token as a JSON response.
+    The secure callback hook for GitHub's authorization service.
+    Exchanges the temporary code for a permanent access token and returns it to the client.
     """
     return await controller.callback(code)
