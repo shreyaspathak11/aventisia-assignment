@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     
     # API Routing & Documentation
     API_V1_STR: str = "/api/v1/github"
+    AUTH_PREFIX: str = "/api/v1/auth"
     GITHUB_TAGS: List[str] = ["GitHub APIs"]
     
     # GitHub Integration Constants
@@ -23,6 +24,12 @@ class Settings(BaseSettings):
     # Authentication (Can be overridden in .env)
     GITHUB_CLIENT_ID: Optional[str] = None
     GITHUB_CLIENT_SECRET: Optional[str] = None
+    
+    # OAuth Integration
+    GITHUB_OAUTH_AUTHORIZE_URL: str = "https://github.com/login/oauth/authorize"
+    GITHUB_OAUTH_TOKEN_URL: str = "https://github.com/login/oauth/access_token"
+    GITHUB_REDIRECT_URI: str = "http://localhost:8000/api/v1/auth/callback"
+    GITHUB_SCOPES: str = "repo user read:org gist"
 
     # Load from .env file if it exists
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")

@@ -1,5 +1,9 @@
 from fastapi import Request
-from services import GithubService
+from services import GithubService, AuthService
+
+def get_auth_service(request: Request) -> AuthService:
+    """Provides an AuthService instance with the shared HTTP client."""
+    return AuthService(client=request.app.state.http_client)
 
 def get_github_service(request: Request) -> GithubService:
     """

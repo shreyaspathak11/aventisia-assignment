@@ -7,6 +7,7 @@ from fastapi.responses import RedirectResponse
 from fastapi.security import HTTPBearer
 
 from api.v1.github_api import router as github_router
+from api.v1.auth_api import router as auth_router
 from middleware.auth_middleware import AuthMiddleware
 from config import settings
 
@@ -44,6 +45,12 @@ app.include_router(
     github_router, 
     prefix=settings.API_V1_STR, 
     tags=settings.GITHUB_TAGS
+)
+
+app.include_router(
+    auth_router, 
+    prefix=settings.AUTH_PREFIX, 
+    tags=["Authentication"]
 )
 
 if __name__ == "__main__":

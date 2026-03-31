@@ -7,8 +7,8 @@ from config import settings
 
 class AuthMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
-        # 1. Skip auth for static/docs paths
-        if request.url.path in {"/docs", "/redoc", "/openapi.json", "/"}:
+        # 1. Skip auth for static/docs and OAuth paths
+        if request.url.path in {"/docs", "/redoc", "/openapi.json", "/"} or "/auth/" in request.url.path:
             return await call_next(request)
         
         # 2. Extract Token
