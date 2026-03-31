@@ -1,52 +1,63 @@
-# GitHub Cloud Connector
+# GitHub Cloud Connector Backend
 
-A professional, modular backend service to integrate with GitHub's API. Built with **FastAPI** using a context-aware architecture that automatically identifies the authenticated user.
+This backend service is a FastAPI-based application that manages the orchestration between the GitHub REST API and the frontend client. It provides secure authentication via OAuth 2.0 and modular endpoints for repository management.
 
-## Getting Started
+---
 
-### Prerequisites
+## Architectural Pattern: Service-Controller-API
 
-- Python 3.10+
-- [uv](https://github.com/astral-sh/uv) (recommended) or `pip`
+This service adheres to a strictly decoupled architecture:
+1.  **Service Layer**: Encapsulates raw HTTP communication with the GitHub REST API.
+2.  **Controller Layer**: Implements business logic, orchestration of multiple services, and error handling transformation.
+3.  **API Layer (Routers)**: Defines the JSON endpoints and executes the FastAPI dependency injection flow.
 
-### Installation
+---
 
-1. **Clone the repository:**
+## OAuth 2.0 Authentication
 
-   ```bash
-   git clone <repository-url>
-   cd backend
-   ```
+The backend handles the complete authorization code flow for GitHub:
+1.  **`/api/v1/auth/login`**: Initiates the handshake by generating a unique authorization URL and redirecting the client.
+2.  **`/api/v1/auth/callback`**: Processes the incoming code, exchanges it for a permanent access token via GitHub's OAuth service, and returns the result as structured JSON.
 
-2. **Setup virtual environment:**
+All subsequent calls require an Authorization header:
+`Authorization: Bearer <access_token>`
 
-   ```bash
-   python -m venv venv
-   # On Windows:
-   venv\Scripts\activate
-   # On Mac/Linux:
-   source venv/bin/activate
-   ```
+---
 
-3. **Install dependencies:**
-   ```bash
-   pip install -r requirements.txt
-   ```
+## API Endpoints
 
-### Running the Application
+### Authentication
+*   `GET /api/v1/auth/login`: Authorization start point.
+*   `GET /api/v1/auth/callback`: Token exchange hook (internal).
 
-Navigate to the `backend` directory and start the server using `uvicorn`:
+### GitHub Operations
+*   `GET /api/v1/github/repos`: Lists the authenticated user's repositories.
+*   `GET /api/v1/github/issues/{repo}`: Lists issues for a specific repository.
+*   `POST /api/v1/github/issues`: Creates a new repository issue.
+*   `GET /api/v1/github/commits/{repo}`: Fetches total commit history.
+*   `POST /api/v1/github/create-branch`: Creates a new branch from a specified base branch.
+*   `POST /api/v1/github/create-file`: Pushes a new file with specified content to a branch.
+*   `POST /api/v1/github/create-pull-request`: Orchestrates the creation of a Pull Request.
 
-```bash
-uvicorn main:app --reload
+---
+
+## Configuration
+
+Environmental variables are managed via a `.env` file in the root backend directory:
+
+```env
+GITHUB_CLIENT_ID=<Your_Application_Client_ID>
+GITHUB_CLIENT_SECRET=<Your_Application_Client_Secret>
 ```
 
-- **Swagger UI**: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
-- **Redoc**: [http://127.0.0.1:8000/redoc](http://127.0.0.1:8000/redoc)
+---
 
-## How to Authenticate (PAT)
+## Security and Performance
 
-1. Generate a **Personal Access Token (PAT)** in GitHub settings.
-2. In Swagger UI, click the **"Authorize"** button.
-3. Enter: `token ghp_your_token_here`
-4. All subsequent API calls will automatically identify you and use your repositories.
+*   **`AuthMiddleware`**: Intercepts all requests (excluding auth routes) to verify the Bearer token and populate a stateless `user_context`.
+*   **Shared HTTP Client**: A single `httpx.AsyncClient` is initialized during the `lifespan` of the FastAPI application for efficient resource pooling.
+*   **Standardized Responses**: All successful calls return a `SuccessResponse` model, while failures utilize a unified `ErrorResponse` model for client-side consistency.
+
+---
+
+Developed for high-performance cloud connectivity.
