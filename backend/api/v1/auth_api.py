@@ -4,7 +4,7 @@ from models import SuccessResponse
 
 router = APIRouter()
 
-@router.get("/login", tags=["Authentication"])
+@router.get("/login")
 async def login(controller: AuthController = Depends()):
     """
     Start GitHub OAuth Login
@@ -13,7 +13,7 @@ async def login(controller: AuthController = Depends()):
     """
     return await controller.login()
 
-@router.get("/callback", response_model=SuccessResponse, tags=["Authentication"])
+@router.get("/callback", response_model=SuccessResponse)
 async def callback(
     code: str = Query(..., description="The temporary code provided by GitHub"),
     controller: AuthController = Depends()
