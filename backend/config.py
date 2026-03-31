@@ -15,8 +15,8 @@ class Settings(BaseSettings):
     # API Routing & Documentation
     API_V1_STR: str = "/api/v1/github"
     AUTH_PREFIX: str = "/api/v1/auth"
-    GITHUB_TAGS: List[str] = ["GitHub APIs"]
-    
+    GITHUB_TAGS: List[str] = ["GitHub"]
+    AUTH_TAGS: List[str] = ["Auth"]
     # GitHub Integration Constants
     GITHUB_BASE_URL: str = "https://api.github.com"
     GITHUB_ACCEPT_HEADER: str = "application/vnd.github.v3+json"

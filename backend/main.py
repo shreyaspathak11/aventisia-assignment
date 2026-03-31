@@ -42,15 +42,15 @@ async def root():
 
 # Include functional routes using central config
 app.include_router(
-    github_router, 
-    prefix=settings.API_V1_STR, 
-    tags=settings.GITHUB_TAGS
+    auth_router, 
+    prefix=settings.AUTH_PREFIX, 
+    tags=settings.AUTH_TAGS
 )
 
 app.include_router(
-    auth_router, 
-    prefix=settings.AUTH_PREFIX, 
-    tags=["Authentication"]
+    github_router, 
+    prefix=settings.API_V1_STR, 
+    tags=settings.GITHUB_TAGS
 )
 
 if __name__ == "__main__":
